@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  AlertCircle,
   CheckCircle2,
   ClipboardList,
+  Globe,
   Info,
   Loader2,
   PlayCircle,
@@ -32,9 +32,18 @@ function Typewriter({ text, speed = 30 }: { text: string; speed?: number }) {
 
 const nodeIcons: Record<string, React.ReactNode> = {
   validate: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+  search: <Globe className="h-5 w-5 text-cyan-500" />,
   plan: <ClipboardList className="h-5 w-5 text-blue-500" />,
   execute: <PlayCircle className="h-5 w-5 text-indigo-500" />,
   finalize: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+};
+
+const nodeTitles: Record<string, string> = {
+  validate: "需求校验",
+  search: "网络检索",
+  plan: "生成计划",
+  execute: "执行步骤",
+  finalize: "总结结果",
 };
 
 function PlanInputError({ final }: { final?: FinalView | null }) {
@@ -76,8 +85,15 @@ function LogRenderer({ log }: { log: Map<string, any> }) {
           <div key={node}>
             <h3 className="font-medium text-lg mb-3 capitalize flex items-center gap-3">
               {nodeIcons[node] || <Info className="h-5 w-5 text-gray-500" />}
-              <span>{node}</span>
+              <span>{nodeTitles[node] || node}</span>
             </h3>
+            {node === "search" && state.searchResults && (
+              <div className="pl-8 border-l-2 border-cyan-200 dark:border-cyan-900 ml-2.5">
+                <p className="text-sm leading-7 text-muted-foreground whitespace-pre-wrap">
+                  <Typewriter text={state.searchResults} />
+                </p>
+              </div>
+            )}
             {node === "plan" && state.steps && (
               <div className="pl-8 border-l-2 border-gray-200 dark:border-gray-700 ml-2.5">
                 <ol className="list-none space-y-2">

@@ -7,30 +7,35 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import { ValidateNode } from "./nodes/01_validate";
-import { PlanNode } from "./nodes/02_plan";
-import { approveNode } from "./nodes/03_approve";
-import { executeNode } from "./nodes/04_execute";
-import { finalizeNode } from "./nodes/05_finalize";
+import internetSearchNode from "./nodes/02_search";
+import { PlanNode } from "./nodes/03_plan";
+import { approveNode } from "./nodes/04_approve";
+import { executeNode } from "./nodes/05_execute";
+import { finalizeNode } from "./nodes/06_finalize";
 import { makeInitialState, State } from "./types";
+
 
 const StateAnn = Annotation.Root({
   input: Annotation<string>,
   steps: Annotation<string[] | undefined>,
   approved: Annotation<boolean | undefined>,
   results: Annotation<Array<{ step: string; note: string }> | undefined>,
-  status: Annotation<"planned" | "done" | "cancelled" | undefined>,
+  status: Annotation<"planned" | "done" | "cancelled" | "searched" | "searched" | undefined>,
   message: Annotation<string | undefined>,
+  searchResults: Annotation<string | undefined>,
 });
 
 const builder = new StateGraph(StateAnn)
   .addNode("validate", ValidateNode)
+  .addNode("search", internetSearchNode)
   .addNode("plan", PlanNode)
   .addNode("approve", approveNode)
   .addNode("execute", executeNode)
   .addNode("finalize", finalizeNode);
 
 builder.addEdge(START, "validate");
-builder.addEdge("validate", "plan");
+builder.addEdge("validate", "search");
+builder.addEdge("search", "plan");
 builder.addEdge("plan", "approve");
 
 builder.addConditionalEdges("approve", (s: typeof StateAnn.State) => {
@@ -46,9 +51,7 @@ const graph = builder.compile({
 });
 
 function createThreadId() {
-  return `t_${Date.now().toString(36)}_${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
+  return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export async function* streamAgentRun(input: string): AsyncGenerator<any> {

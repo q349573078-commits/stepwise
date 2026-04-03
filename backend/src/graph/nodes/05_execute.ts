@@ -20,16 +20,8 @@ function makeModel() {
 function createHumanPromptContent(steps: string[]) {
   const list = JSON.stringify(steps, null, 0);
 
-  return [
-    "你是一个简洁的助手。",
-    '给定一个步骤列表，返回 JSON 对象 {"notes" : string[]}',
-    "规则：",
-    "notes.length 必须等于 steps.length",
-    "每个 note 不超过300个字符",
-    "纯文本，不要使用 markdown",
-    "",
-    `步骤 = ${list}`,
-  ].join("\n");
+  return `你是一个简洁的助手。给定一个步骤列表，返回 JSON 对象 {"notes" : string[]}。规则：notes.length 必须等于 steps.length,
+    每个 note 不超过300个字符,纯文本，不要使用 markdown,每个 note 都要具体、可操作，不能与步骤重复。步骤 = ${list}`
 }
 
 export async function executeNode(state: State): Promise<Partial<State>> {

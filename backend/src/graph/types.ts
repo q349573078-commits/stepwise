@@ -4,7 +4,7 @@ import { z } from "zod";
 // done -> task is already executed and final result prepared
 // cancelled -> in this case user rejected the flow , we stop gracefully
 
-export const ExecutionStatus = z.enum(["planned", "done", "cancelled"]);
+export const ExecutionStatus = z.enum(["planned", "done", "cancelled", "searched"]);
 export type ExecutionStatus = z.infer<typeof ExecutionStatus>;
 
 // step result
@@ -23,6 +23,7 @@ export const StateSchema = z.object({
   results: z.array(StepResult).optional(),
   status: ExecutionStatus.optional(),
   message: z.string().optional(),
+  searchResults: z.string().optional(),
 });
 
 export type State = z.infer<typeof StateSchema>;

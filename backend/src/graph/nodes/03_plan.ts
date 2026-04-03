@@ -21,10 +21,10 @@ function makeModel() {
   });
 }
 
-const SYSTEM = "你是一个乐于助人的规划师。你的唯一任务是帮助用户制定具体的执行计划。\n\n如果用户的输入是制定计划的目标，请返回符合JSON schema的结果。步骤要具体、可操作，并且对初学者友好。";
+const SYSTEM = "你是一个乐于助人的规划师。你的唯一任务是帮助用户制定具体的执行计划。\n\n如果用户的输入是制定计划的目标，请返回符合JSON schema的结果。步骤要具体、可操作。回答前，需要参考网络上检索到的资料。";
 
-function userPrompt(input: string) {
-  return `用户目标: "${input}"。请制定一个包含3-5个步骤的小计划，每个步骤都是一个短句。`;
+function userPrompt(input: string, searchResults: string) {
+  return `用户目标: "${input}"。网络上检索到的资料: ${searchResults}。请制定一个包含3-5个步骤的小计划，每个步骤都是一个短句。短句要具体、可操作。`;
 }
 
 function takeFirstN(arr: string[], n = 5): string[] {
@@ -46,7 +46,7 @@ export async function PlanNode(state: State): Promise<Partial<State>> {
 
     {
       role: "human",
-      content: userPrompt(state.input),
+      content: userPrompt(state.input, state.searchResults || ""),
     },
   ]);
 
