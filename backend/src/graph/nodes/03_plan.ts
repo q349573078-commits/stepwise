@@ -1,4 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import { z } from "zod";
 import { env } from "../../utils/env";
 import { State } from "../types";
@@ -31,7 +32,10 @@ function takeFirstN(arr: string[], n = 5): string[] {
   return Array.isArray(arr) ? arr.slice(0, Math.max(0, n)) : [];
 }
 
-export async function PlanNode(state: State): Promise<Partial<State>> {
+export async function PlanNode(
+  state: State,
+  config?: RunnableConfig
+): Promise<Partial<State>> {
   if (state.status === "cancelled") return {};
 
   const model = makeModel();
@@ -48,7 +52,7 @@ export async function PlanNode(state: State): Promise<Partial<State>> {
       role: "human",
       content: userPrompt(state.input, state.searchResults || ""),
     },
-  ]);
+  ], config);
 
   const steps = takeFirstN(plan.steps, 5);
 

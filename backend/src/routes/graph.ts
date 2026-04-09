@@ -35,14 +35,13 @@ router.post("/", async (req, res) => {
     }
   } catch (e) {
     console.error("Error in agent stream:", e);
-    const errorPayload = {
-      event: "error",
-      data: JSON.stringify({
-        error: "An error occurred during agent execution.",
-      }),
-    };
     res.write(`event: error\n`);
-    res.write(`data: ${JSON.stringify(errorPayload)}\n\n`);
+    res.write(
+      `data: ${JSON.stringify({
+        type: "error",
+        error: "An error occurred during agent execution.",
+      })}\n\n`
+    );
   } finally {
     res.end();
   }
@@ -71,14 +70,13 @@ router.post("/approve", async (req, res) => {
     }
   } catch (e) {
     console.error("Error in agent resume stream:", e);
-    const errorPayload = {
-      event: "error",
-      data: JSON.stringify({
-        error: "An error occurred during agent execution.",
-      }),
-    };
     res.write(`event: error\n`);
-    res.write(`data: ${JSON.stringify(errorPayload)}\n\n`);
+    res.write(
+      `data: ${JSON.stringify({
+        type: "error",
+        error: "An error occurred during agent execution.",
+      })}\n\n`
+    );
   } finally {
     res.end();
   }

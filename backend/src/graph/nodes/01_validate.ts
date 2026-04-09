@@ -1,5 +1,6 @@
 import type { State } from "../types";
 import { ChatOpenAI } from "@langchain/openai";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import { z } from "zod";
 import { env } from "../../utils/env";
 
@@ -20,7 +21,10 @@ function makeModel() {
 
 const SYSTEM_PROMPT = "你是一个意图分类器。请判断用户的输入是否与制定计划相关。\n\n与计划相关的输入包括：\n- 制定任务计划\n- 规划执行步骤\n- 安排工作流程\n- 制定目标实现方案\n\n与计划不相关的输入包括：\n- 闲聊问候\n- 询问其他问题\n- 请求其他帮助\n\n请只返回 JSON 格式的结果。";
 
-export async function ValidateNode(state: State): Promise<Partial<State>> {
+export async function ValidateNode(
+  state: State,
+  config?: RunnableConfig
+): Promise<Partial<State>> {
   const raw = state.input ?? "";
   const trimInput = raw.trim();
 
@@ -46,7 +50,7 @@ export async function ValidateNode(state: State): Promise<Partial<State>> {
       role: "human",
       content: `用户输入: "${trimInput}"`,
     },
-  ]);
+  ], config);
 
   if (!intentResult.isPlanRelated) {
     return {

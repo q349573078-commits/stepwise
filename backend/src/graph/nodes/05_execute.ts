@@ -1,4 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import { z } from "zod";
 import { env } from "../../utils/env";
 import { State } from "../types";
@@ -24,7 +25,10 @@ function createHumanPromptContent(steps: string[]) {
     每个 note 不超过300个字符,纯文本，不要使用 markdown,每个 note 都要具体、可操作，不能与步骤重复。步骤 = ${list}`
 }
 
-export async function executeNode(state: State): Promise<Partial<State>> {
+export async function executeNode(
+  state: State,
+  config?: RunnableConfig
+): Promise<Partial<State>> {
   if (!state.approved) return {};
 
   const steps = state.steps ?? [];
@@ -42,7 +46,7 @@ export async function executeNode(state: State): Promise<Partial<State>> {
       role: "human",
       content: createHumanPromptContent(steps),
     },
-  ]);
+  ], config);
 
   const count = Math.min(steps.length, out.notes.length);
   const results = Array.from({ length: count }, (_, i) => ({

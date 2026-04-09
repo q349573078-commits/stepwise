@@ -6,11 +6,13 @@ import { FinalView, InterruptView } from "@/lib/types";
 import { useEffect, useReducer, useRef } from "react";
 
 type RunLog = Map<string, any>;
+type TokenLog = Map<string, string>;
 
 interface AgentState {
   isStreaming: boolean;
   threadId: string | null;
   log: RunLog;
+  tokenLog: TokenLog;
   needsApproval: InterruptView | null;
   finalState: FinalView | null;
   error: string | null;
@@ -20,6 +22,7 @@ const initialState: AgentState = {
   isStreaming: false,
   threadId: null,
   log: new Map(),
+  tokenLog: new Map(),
   needsApproval: null,
   finalState: null,
   error: null,
@@ -29,6 +32,7 @@ type AgentAction =
   | { type: "STREAM_START" }
   | { type: "RECEIVE_THREAD_ID"; payload: string }
   | { type: "RECEIVE_STATE"; payload: { node: string; data: any } }
+  | { type: "RECEIVE_TOKEN"; payload: { node: string; token: string } }
   | { type: "NEEDS_APPROVAL"; payload: any }
   | { type: "RECEIVE_FINAL_STATE"; payload: any }
   | { type: "STREAM_END" }
@@ -44,6 +48,17 @@ function agentReducer(state: AgentState, action: AgentAction): AgentState {
       const newLog = new Map(state.log);
       newLog.set(action.payload.node, action.payload.data);
       return { ...state, log: newLog };
+    case "RECEIVE_TOKEN":
+      const tokenBackedLog = new Map(state.log);
+      if (!tokenBackedLog.has(action.payload.node)) {
+        tokenBackedLog.set(action.payload.node, {});
+      }
+      const newTokenLog = new Map(state.tokenLog);
+      newTokenLog.set(
+        action.payload.node,
+        (newTokenLog.get(action.payload.node) ?? "") + action.payload.token
+      );
+      return { ...state, log: tokenBackedLog, tokenLog: newTokenLog };
     case "NEEDS_APPROVAL":
       return {
         ...state,
@@ -83,6 +98,9 @@ export default function AgentPage() {
           break;
         case "state":
           dispatch({ type: "RECEIVE_STATE", payload: chunk });
+          break;
+        case "token":
+          dispatch({ type: "RECEIVE_TOKEN", payload: chunk });
           break;
         case "needs_approval":
           dispatch({ type: "NEEDS_APPROVAL", payload: chunk.data });
@@ -134,6 +152,7 @@ export default function AgentPage() {
         <AgentForm disabled={state.isStreaming} onStart={handleAgentStart} />
         <RunLogs
           log={state.log}
+          tokenLog={state.tokenLog}
           interrupt={state.needsApproval}
           final={state.finalState}
           loading={state.isStreaming}
